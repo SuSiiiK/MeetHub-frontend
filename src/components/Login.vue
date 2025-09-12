@@ -25,7 +25,6 @@ export default {
       } catch (error) {
         console.error('Ошибка при авторизации:', error);
 
-        // Обработка ошибок (пример)
         if (error.response && error.response.status === 401) {
           this.errors.password = 'Неверное имя пользователя или пароль';
         } else {
