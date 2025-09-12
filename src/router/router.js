@@ -5,6 +5,8 @@ import Register from "@/components/Register.vue";
 import Profile from "@/components/Profile.vue";
 import Login from "@/components/Login.vue";
 import Conferences from "@/components/Сonferences.vue";
+import CreateConference from "@/components/СreatingСonference.vue";
+import ConferenceJoin from "@/components/ConferenceJoin.vue";
 
 const routes = [
     {
@@ -23,6 +25,14 @@ const routes = [
     {
         path: '/conferences',
         component: Conferences
+    },
+    {
+        path: '/create-conference',
+        component: CreateConference
+    },
+    {
+        path:'/conference-join',
+        component: ConferenceJoin
     }
 
 ]
