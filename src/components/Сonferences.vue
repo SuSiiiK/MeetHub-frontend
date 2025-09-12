@@ -1,30 +1,33 @@
 <template>
   <div class="conference-page">
-    <!-- Заголовок -->
     <header class="conference-header">
       <h1>Онлайн-конференция</h1>
-      <p>Ваше подключение к встрече</p>
+      <p>Подключайтесь и делитесь ссылкой</p>
     </header>
 
-    <!-- Видео блок -->
-    <div class="conference-body">
-      <div class="video-wrapper">
-        <video ref="videoRef" autoplay playsinline class="video mirrored"></video>
-      </div>
-
-      <!-- Панель управления -->
-      <div class="controls">
-        <button @click="toggleVideo" :class="['btn', isVideoOn ? 'btn-danger' : 'btn-primary']">
-          {{ isVideoOn ? "📷 Выключить камеру" : "📷 Включить камеру" }}
-        </button>
-        <button @click="toggleAudio" :class="['btn', isAudioOn ? 'btn-danger' : 'btn-primary']">
-          {{ isAudioOn ? "🎤 Выключить микрофон" : "🎤 Включить микрофон" }}
-        </button>
-        <button class="btn btn-outline" @click="$router.push('/')">
-          ↩️ Выйти
-        </button>
+    <div v-if="inviteLink" class="invite-card">
+      <p class="invite-label">🔗 Пригласительная ссылка:</p>
+      <a :href="inviteLink" target="_blank" class="invite-link">{{ inviteLink }}</a>
+      <div class="invite-actions">
+        <button class="btn-copy" @click="copyLink">📋 Скопировать</button>
       </div>
     </div>
+
+    <div class="video-wrapper">
+      <video ref="videoRef" autoplay playsinline class="video mirrored"></video>
+    </div>
+
+    <div class="control-bar">
+      <button @click="toggleVideo" :class="['btn-control', isVideoOn ? 'danger' : 'primary']">
+        {{ isVideoOn ? "📷 Выкл. камеру" : "📷 Вкл. камеру" }}
+      </button>
+      <button @click="toggleAudio" :class="['btn-control', isAudioOn ? 'danger' : 'primary']">
+        {{ isAudioOn ? "🎤 Выкл. микрофон" : "🎤 Вкл. микрофон" }}
+      </button>
+      <button class="btn-exit" @click="$router.push('/')">↩️ Выйти</button>
+    </div>
+
+    <div v-if="copied" class="toast">✅ Ссылка скопирована!</div>
   </div>
 </template>
 
@@ -34,7 +37,9 @@ export default {
     return {
       stream: null,
       isVideoOn: true,
-      isAudioOn: true
+      isAudioOn: true,
+      inviteLink: localStorage.getItem("inviteLink"),
+      copied: false
     }
   },
   async mounted() {
@@ -59,6 +64,15 @@ export default {
         audioTrack.enabled = !audioTrack.enabled;
         this.isAudioOn = audioTrack.enabled;
       }
+    },
+    async copyLink() {
+      try {
+        await navigator.clipboard.writeText(this.inviteLink);
+        this.copied = true;
+        setTimeout(() => (this.copied = false), 2000);
+      } catch (err) {
+        console.error("Ошибка копирования:", err);
+      }
     }
   }
 }
@@ -69,94 +83,153 @@ export default {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   color: white;
-  padding: 40px 20px;
+  padding: 20px;
+  align-items: center;
+  justify-content: flex-start;
 }
 
+/* Хедер */
 .conference-header {
   text-align: center;
-  margin-bottom: 40px;
-  margin-top: 40px;
+  margin-bottom: 20px;
 }
-
 .conference-header h1 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
 }
-
 .conference-header p {
-  font-size: 1.1rem;
-  color: #a0aec0;
+  font-size: 1rem;
+  color: #94a3b8;
 }
 
-.conference-body {
+/* Карточка ссылки */
+.invite-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 20px;
+  border-radius: 14px;
+  text-align: center;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+.invite-label {
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+.invite-link {
+  display: block;
+  color: #60a5fa;
+  font-weight: 500;
+  margin-bottom: 15px;
+  word-break: break-all;
+  text-decoration: none;
+}
+.invite-actions {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.btn-copy, .btn-open {
+  background: #3b82f6;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+  text-decoration: none;
+}
+.btn-copy:hover, .btn-open:hover {
+  background: #2563eb;
 }
 
+/* Видео */
 .video-wrapper {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
-  padding: 10px;
+  padding: 8px;
   backdrop-filter: blur(8px);
   margin-bottom: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
 }
-
 .video {
-  width: 600px;
+  width: 640px;
   max-width: 90vw;
   border-radius: 12px;
 }
-
 .mirrored {
   transform: scaleX(-1);
 }
 
-.controls {
+/* Нижняя панель */
+.control-bar {
+  position: fixed;
+  bottom: 20px;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 12px 20px;
+  border-radius: 16px;
   display: flex;
   gap: 16px;
-  flex-wrap: wrap;
   justify-content: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
 }
-
-.btn {
-  padding: 12px 24px;
+.btn-control {
+  padding: 10px 18px;
   border-radius: 10px;
   font-weight: 600;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
-.btn-primary {
-  background: #667eea;
+.btn-control.primary {
+  background: #3b82f6;
   color: white;
 }
-
-.btn-primary:hover {
-  background: #5a67d8;
+.btn-control.primary:hover {
+  background: #2563eb;
 }
-
-.btn-danger {
-  background: #e53e3e;
+.btn-control.danger {
+  background: #ef4444;
   color: white;
 }
-
-.btn-danger:hover {
-  background: #c53030;
+.btn-control.danger:hover {
+  background: #dc2626;
 }
-
-.btn-outline {
+.btn-exit {
   background: transparent;
-  color: #a0aec0;
-  border: 2px solid #a0aec0;
+  border: 2px solid #94a3b8;
+  color: #94a3b8;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+.btn-exit:hover {
+  background: #475569;
+  color: white;
+  border-color: #64748b;
 }
 
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
+.toast {
+  position: fixed;
+  bottom: 80px;
+  background: #22c55e;
   color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  animation: fadeInOut 2s ease forwards;
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(10px); }
+  20% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-10px); }
 }
 </style>
