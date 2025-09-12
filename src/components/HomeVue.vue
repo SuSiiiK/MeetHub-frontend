@@ -1,112 +1,128 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+<script>
+import { useRouter } from "vue-router";
 
-const router = useRouter()
-
-const upcomingConferences = ref([
-  {
-    id: 1,
-    title: 'Цифровая трансформация бизнеса 2024',
-    date: '15 декабря 2024',
-    time: '10:00 - 18:00',
-    speakers: 12,
-    participants: 250,
-    image: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=600&h=300&fit=crop',
-    category: 'Бизнес-технологии',
-    location: 'Онлайн'
+export default {
+  name: "HomePage",
+  data() {
+    return {
+      upcomingConferences: [
+        {
+          id: 1,
+          title: "Цифровая трансформация бизнеса 2024",
+          date: "15 декабря 2024",
+          time: "10:00 - 18:00",
+          speakers: 12,
+          participants: 250,
+          image: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=600&h=300&fit=crop",
+          category: "Бизнес-технологии",
+          location: "Онлайн",
+        },
+        {
+          id: 2,
+          title: "Искусственный интеллект в промышленности",
+          date: "20 января 2025",
+          time: "09:00 - 17:00",
+          speakers: 8,
+          participants: 180,
+          image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&h=300&fit=crop",
+          category: "AI & ML",
+          location: "Москва",
+        },
+        {
+          id: 3,
+          title: "Кибербезопасность и защита данных",
+          date: "5 февраля 2025",
+          time: "11:00 - 19:00",
+          speakers: 6,
+          participants: 120,
+          image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&h=300&fit=crop",
+          category: "Безопасность",
+          location: "Онлайн",
+        },
+      ],
+      stats: [
+        { number: "500+", label: "Проведенных мероприятий" },
+        { number: "10K+", label: "Профессиональных участников" },
+        { number: "200+", label: "Экспертных спикеров" },
+        { number: "95%", label: "Удовлетворенности клиентов" },
+      ],
+      features: [
+        {
+          icon: "🎯",
+          title: "Профессиональная организация",
+          description:
+              "Полный цикл организации мероприятий от планирования до проведения",
+        },
+        {
+          icon: "🔒",
+          title: "Корпоративная безопасность",
+          description:
+              "Enterprise-уровень защиты данных и видеокоммуникаций",
+        },
+        {
+          icon: "📊",
+          title: "Детальная аналитика",
+          description:
+              "Глубокий анализ участия и вовлеченности аудитории",
+        },
+        {
+          icon: "💬",
+          title: "Интерактивные сессии",
+          description:
+              "Q&A, опросы и групповые дискуссии для максимального вовлечения",
+        },
+      ],
+      activeTab: "upcoming",
+      searchQuery: "",
+      animatedStats: [],
+    };
   },
-  {
-    id: 2,
-    title: 'Искусственный интеллект в промышленности',
-    date: '20 января 2025',
-    time: '09:00 - 17:00',
-    speakers: 8,
-    participants: 180,
-    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&h=300&fit=crop',
-    category: 'AI & ML',
-    location: 'Москва'
+  computed: {
+    isAuthenticated() {
+      return !!localStorage.getItem("token");
+    },
   },
-  {
-    id: 3,
-    title: 'Кибербезопасность и защита данных',
-    date: '5 февраля 2025',
-    time: '11:00 - 19:00',
-    speakers: 6,
-    participants: 120,
-    image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&h=300&fit=crop',
-    category: 'Безопасность',
-    location: 'Онлайн'
-  }
-])
+  methods: {
+    joinConference(conferenceId) {
+      this.$router.push(`/conference/${conferenceId}`);
+    },
+    createConference() {
+      if(this.isAuthenticated) {
+        this.$router.push("/create-conference");
+      } else {
+        this.$router.push("/login");
+      }
+    },
+    animateCounters() {
+      this.animatedStats = this.stats.map((stat) => ({
+        ...stat,
+        animatedNumber: 0,
+      }));
 
-const stats = ref([
-  { number: '500+', label: 'Проведенных мероприятий' },
-  { number: '10K+', label: 'Профессиональных участников' },
-  { number: '200+', label: 'Экспертных спикеров' },
-  { number: '95%', label: 'Удовлетворенности клиентов' }
-])
+      this.animatedStats.forEach((stat, index) => {
+        const target = parseInt(stat.number);
+        const duration = 2000;
+        const steps = 60;
+        const increment = target / steps;
+        let current = 0;
 
-const features = ref([
-  {
-    icon: '🎯',
-    title: 'Профессиональная организация',
-    description: 'Полный цикл организации мероприятий от планирования до проведения'
+        const timer = setInterval(() => {
+          current += increment;
+          if (current >= target) {
+            current = target;
+            clearInterval(timer);
+          }
+          this.animatedStats[index].animatedNumber = Math.floor(current);
+        }, duration / steps);
+      });
+    },
   },
-  {
-    icon: '🔒',
-    title: 'Корпоративная безопасность',
-    description: 'Enterprise-уровень защиты данных и видеокоммуникаций'
+  mounted() {
+    setTimeout(this.animateCounters, 500);
   },
-  {
-    icon: '📊',
-    title: 'Детальная аналитика',
-    description: 'Глубокий анализ участия и вовлеченности аудитории'
-  },
-  {
-    icon: '💬',
-    title: 'Интерактивные сессии',
-    description: 'Q&A, опросы и групповые дискуссии для максимального вовлечения'
-  }
-])
-
-const activeTab = ref('upcoming')
-const searchQuery = ref('')
-
-const joinConference = (conferenceId) => {
-  router.push(`/conference/${conferenceId}`)
-}
-
-const createConference = () => {
-  router.push('/conference')
-}
-
-// Анимация счетчиков
-const animatedStats = ref(stats.value.map(stat => ({ ...stat, animatedNumber: 0 })))
-
-onMounted(() => {
-  const animateCounters = () => {
-    animatedStats.value.forEach((stat, index) => {
-      const target = parseInt(stat.number)
-      const duration = 2000
-      const steps = 60
-      const increment = target / steps
-      let current = 0
-
-      const timer = setInterval(() => {
-        current += increment
-        if (current >= target) {
-          current = target
-          clearInterval(timer)
-        }
-        animatedStats.value[index].animatedNumber = Math.floor(current)
-      }, duration / steps)
-    })
-  }
-
-  setTimeout(animateCounters, 500)
-})
+};
 </script>
+
 
 <template>
   <div class="home-container">
@@ -124,11 +140,11 @@ onMounted(() => {
               корпоративных мероприятий мирового уровня с фокусом на безопасность и качество.
             </p>
             <div class="hero-buttons">
-              <button class="btn btn-primary">
-                <router-link to="/conferences">Организовать мероприятие</router-link>
+              <button @click="createConference" class="btn btn-primary">
+                Организовать мероприятие
                 <span class="btn-arrow">→</span>
               </button>
-              <button @click="$router.push('/conferences')" class="btn btn-secondary">
+              <button @click="$router.push('/conference-join')" class="btn btn-secondary">
                 Найти мероприятия
               </button>
             </div>
@@ -339,7 +355,6 @@ onMounted(() => {
   padding: 0 20px;
 }
 
-/* Hero Section */
 .hero-section {
   padding: 120px 0;
   background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
@@ -775,7 +790,6 @@ onMounted(() => {
   text-align: center;
 }
 
-/* Features Section */
 .features-section {
   padding: 100px 0;
   background: #f7fafc;
